@@ -1,15 +1,18 @@
 import {
   keyStores,
   Near,
+  Contract,
   WalletConnection,
   utils as nearUtils,
 } from "near-api-js";
 
 
+export const CONTRACT_NAME = process.env.CONTRACT_NAME || "new-awesome-project";
 
-export const CONTRACT_ID = "dev-1643583533233-86904103016460";
+// replace the CONTRACT_ID with the account where you have deployed your smart contract
+export const CONTRACT_ID = "dev-1668523425541-30692929149368";
 
-export const initNear = () => {
+export const initNear = async () => {
   //Testnet config
   const near = new Near({
     networkId: "testnet",
@@ -20,6 +23,13 @@ export const initNear = () => {
 
   //Wallet init
   wallet = new WalletConnection(near, "Near Dapp");
+  // contract init
+  contract = new Contract(wallet.account(), CONTRACT_ID, {
+    // View methods are read only. They don't modify the state, but usually return some value.
+    viewMethods: ["get_nft"],
+    // Change methods can modify the state. But you don't receive the returned value when called.
+    changeMethods: ["callFunction"],
+  });
 };
 
 //Loaded after the being server to the client
@@ -40,13 +50,10 @@ export const signOut = () => {
 
 
 //Function for view methods
-export const viewFunction = async (functionName, args = {}) => {
-  const result = await wallet
-    .account()
-    .viewFunction(CONTRACT_ID, functionName, args);
-
+export async function get_nft() {
+  let result = await contract.get_nft()
   return result;
-};
+}
 
 //Function for call method
 export const callFunction = async (functionName, args = {}, deposit = "0") => {
@@ -55,6 +62,14 @@ export const callFunction = async (functionName, args = {}, deposit = "0") => {
     methodName: functionName,
     args: args,
     attachedDeposit: utils.format.parseNearAmount(deposit),
+  });
+  return result;
+}
+
+export async function new_supply(sponsor, id) {
+  let result = await contract.callFunction({
+    sponsor: sponsor,
+    hospital_id: id,
   });
   return result;
 }

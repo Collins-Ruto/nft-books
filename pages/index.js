@@ -5,17 +5,28 @@ import Head from "next/head";
 import { useState, useEffect } from "react";
 
 //Near imports
-import { signIn, signOut, wallet } from "../near/near-setup";
+import { signIn, signOut, wallet, get_nft } from "../near/near-setup";
 
 export default function Home() {
   const [user, setUser] = useState(null);
+  const [nfts, setNfts] = useState('')
 
   useEffect(() => {
     if (wallet.getAccountId()) {
       setUser(wallet.getAccountId());
     }
+
+    const getNft = async () => {
+      const res = await get_nft()
+      setNfts(res)
+    }
+
+    getNft()
   }, []);
 
+  const nftOld = () => {
+    get_nft_old()
+  }
   return (
     <div>
       <Head>
@@ -40,6 +51,7 @@ export default function Home() {
         ) : (
           <>
             <h4>Welcome {user}</h4>
+            {nfts}
             <button
               className="button"
               onClick={() => {
